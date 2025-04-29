@@ -1,0 +1,189 @@
+{
+  "name": "TEMPLATE 1",
+  "preview": "/templates/template-1.png",
+  "layout": {
+    "orientation": "Portrait",
+    "selectedLayoutId": "layout-12",
+    "margins": {
+      "top": 40,
+      "right": 40,
+      "bottom": 40,
+      "left": 40
+    },
+    "backgroundColor": "#F7DF26",
+    "border": {
+      "thickness": 0,
+      "color": "#ffffff"
+    },
+    "mapNoMargin": false
+  },
+  "labels": {
+    "title": {
+      "text": "<p style=\"text-align: center\"><span style=\"font-family: 'Bangers', cursive\">dijon</span></p>",
+      "isVisible": true,
+      "style": {
+        "color": "#000000",
+        "fontSize": 75,
+        "fontFamily": "'Bangers', cursive",
+        "fontWeight": 700,
+        "isItalic": false,
+        "textAlign": "center",
+        "marginTop": 30,
+        "marginBottom": 0,
+        "textTransform": "uppercase"
+      }
+    },
+    "description": {
+      "text": "<p style=\"text-align: center\"><span style=\"font-family: Bangers, cursive\">Marathon</span></p>",
+      "isVisible": true,
+      "style": {
+        "color": "#000000",
+        "fontSize": 75,
+        "fontFamily": "'Bangers', cursive",
+        "fontWeight": 300,
+        "isItalic": false,
+        "textAlign": "center",
+        "marginTop": 10,
+        "marginBottom": 0,
+        "textTransform": "uppercase"
+      }
+    },
+    "stats": [
+      {
+        "label": "Date",
+        "value": "19/04/2025",
+        "style": {
+          "color": "#000000",
+          "fontSize": 16,
+          "fontFamily": "'Bangers', cursive",
+          "fontWeight": 400,
+          "textTransform": "none"
+        }
+      },
+      {
+        "label": "Distance",
+        "value": "163.61 KM",
+        "style": {
+          "color": "#000000",
+          "fontSize": 16,
+          "fontFamily": "'Bangers', cursive",
+          "fontWeight": 400,
+          "textTransform": "none"
+        }
+      },
+      {
+        "label": "Duration",
+        "value": "00:00:00",
+        "style": {
+          "color": "#000000",
+          "fontSize": 16,
+          "fontFamily": "'Bangers', cursive",
+          "fontWeight": 400,
+          "textTransform": "none"
+        }
+      }
+    ]
+  },
+  "points": {
+    "points": [
+      {
+        "id": "local-dee13a5add965129c213f58b6078af6296c5af7d9cb36efe05ee2a1337a6ef6b-startPoint",
+        "activityId": "local-dee13a5add965129c213f58b6078af6296c5af7d9cb36efe05ee2a1337a6ef6b",
+        "type": "startPoint",
+        "name": "Prissé",
+        "description": "",
+        "coordinate": [
+          4.76225,
+          46.32482
+        ],
+        "isVisible": true,
+        "style": {
+          "color": "#000000",
+          "textColor": "#FFFFFF",
+          "shape": "circle"
+        },
+        "position": "top-left"
+      },
+      {
+        "id": "local-dee13a5add965129c213f58b6078af6296c5af7d9cb36efe05ee2a1337a6ef6b-finishPoint",
+        "activityId": "local-dee13a5add965129c213f58b6078af6296c5af7d9cb36efe05ee2a1337a6ef6b",
+        "type": "finishPoint",
+        "name": "Dijon",
+        "description": "",
+        "coordinate": [
+          5.04416,
+          47.31341
+        ],
+        "isVisible": true,
+        "style": {
+          "color": "#000000",
+          "textColor": "#FFFFFF",
+          "shape": "circle"
+        },
+        "position": "bottom-right"
+      },
+      {
+        "id": "local-dee13a5add965129c213f58b6078af6296c5af7d9cb36efe05ee2a1337a6ef6b-lowestElevation",
+        "activityId": "local-dee13a5add965129c213f58b6078af6296c5af7d9cb36efe05ee2a1337a6ef6b",
+        "type": "lowestElevation",
+        "name": "Lowest Point",
+        "description": "",
+        "coordinate": [
+          5.11785,
+          47.00959
+        ],
+        "isVisible": true,
+        "style": {
+          "color": "#000000",
+          "textColor": "#FFFFFF",
+          "shape": "circle"
+        },
+        "position": "bottom-center"
+      },
+      {
+        "id": "local-dee13a5add965129c213f58b6078af6296c5af7d9cb36efe05ee2a1337a6ef6b-highestElevation",
+        "activityId": "local-dee13a5add965129c213f58b6078af6296c5af7d9cb36efe05ee2a1337a6ef6b",
+        "type": "highestElevation",
+        "name": "Highest Point",
+        "description": "",
+        "coordinate": [
+          4.66879,
+          46.38323
+        ],
+        "isVisible": true,
+        "style": {
+          "color": "#000000",
+          "textColor": "#FFFFFF",
+          "shape": "circle"
+        },
+        "position": "top-center"
+      }
+    ],
+    "selectedPointId": null
+  },
+  "map": {
+    "selectedStyleId": "clp7ekf3l00ho01qxft8c9ft0",
+    "showTerrain": false,
+    "showLabels": false,
+    "pitch": 0,
+    "bearing": 0
+  },
+  "trace": {
+    "color": "#000000",
+    "width": 2,
+    "opacity": 1,
+    "lineStyle": "solid",
+    "lineCap": "round",
+    "lineJoin": "round"
+  },
+  "profile": {
+    "isVisible": true,
+    "style": "area",
+    "color": "#51490b",
+    "showGradient": false,
+    "gradientLength": "L",
+    "showGradientEffect": true,
+    "showAxis": false,
+    "chartHeight": 130
+  }
+}

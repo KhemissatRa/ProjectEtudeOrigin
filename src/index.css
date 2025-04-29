@@ -1,0 +1,183 @@
+/* Import Google Fonts - catalogue étendu */
+@import url('https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Alegreya:ital,wght@0,400;0,700;1,400&family=Alegreya+Sans:ital,wght@0,400;0,700;1,400&family=Archivo+Black&family=Archivo+Narrow:wght@400;700&family=Arimo:ital,wght@0,400;0,700;1,400&family=Arvo:ital,wght@0,400;0,700;1,400&family=B612:ital,wght@0,400;0,700;1,400&family=Bangers&family=Bad+Script&family=Bebas+Neue&family=BioRhyme:wght@400;700&family=Cabin:ital,wght@0,400;0,700;1,400&family=Cardo:wght@400;700&family=Chewy&family=Chivo:wght@400;700&family=Chunk&family=Concert+One&family=Cormorant:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,700;1,400&family=Dancing+Script:wght@400;700&family=Domine:wght@400;700&family=Eczar:wght@400;700&family=Faster+One&family=Fira+Sans:wght@400;700&family=Frank+Ruhl+Libre:wght@400;700&family=Fredericka+the+Great&family=Fruktur&family=Germania+One&family=Glacial+Indifference:wght@400;700&family=Goudy+Bookletter+1911&family=Graduate&family=IBM+Plex+Sans:wght@400;700&family=Inconsolata:wght@400;700&family=Inknut+Antiqua:wght@400;700&family=Inter:wght@400;700&family=Josefin+Sans:wght@400;700&family=Karla:wght@400;700&family=Knewave&family=Lato:ital,wght@0,400;0,700;1,400&family=League+Gothic&family=League+Spartan:wght@400;700&family=Libre+Baskerville:wght@400;700&family=Libre+Franklin:wght@400;700&family=Lora:ital,wght@0,400;0,700;1,400&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Modak&family=Monoton&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Neuton:wght@400;700&family=New+Rocker&family=Nunito+Sans:wght@400;700&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Orbitron:wght@400;700&family=Oswald:wght@200..700&family=Peace+Sans&family=Permanent+Marker&family=Pirata+One&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Poppins:wght@400;700&family=Proza+Libre:wght@400;700&family=PT+Sans:wght@400;700&family=PT+Serif:wght@400;700&family=Rakkas&family=Raleway:wght@400;700&family=Roboto:ital,wght@0,400;0,700;1,400&family=Roboto+Slab:wght@400;700&family=Rozha+One&family=Rubik:wght@400;700&family=Rubik+Mono+One&family=Sacramento&family=Shrikhand&family=Sigmar+One&family=Solena&family=Source+Sans+Pro:wght@400;700&family=Source+Serif+Pro:wght@400;700&family=Space+Mono:wght@400;700&family=Spartan:wght@400;700&family=Spectral:wght@400;700&family=Sunday&family=Tenor+Sans&family=Ultra&family=UnifrakturCook&family=UnifrakturMaguntia&family=Varela&family=Varela+Round&family=Vollkorn:wght@400;700&family=Work+Sans:wght@400;700&family=Yatra+One&display=swap');
+
+/* Fonts custom à ajouter en @font-face si besoin :
+   - Lovelo, ABYS, Bernier, Norwester, Kontanter, Playlist, Playlist Caps, Sifonn, Typeface Claire-Obscure, Typeface Pleine, Lot, Apfel Grotezk, Apfel Grotezk Brukt, Edo, Gagalin, Godoia, Godoia Deco, Guerrilla, Perfograma, Repekt, Ribes, Selima, Sifonn Outline, Blackout Midnight, Blackout Sunrise, Blackout Two AM, Budmo Jiggler, Bungee Inline, Bungee Outline, Bungee Shade
+   - Fournir les fichiers .woff/.ttf et ajouter ci-dessous si tu veux qu'elles s'affichent partout.
+*/
+
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;1,400&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Oswald:wght@200..700&family=Roboto:ital,wght@0,400;0,700;1,400&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Montserrat", sans-serif;
+  --font-body: "Open Sans", sans-serif;
+  --font-oswald: "Oswald", sans-serif;
+  --font-roboto: "Roboto", sans-serif; /* Add other fonts if needed */
+  --font-lato: "Lato", sans-serif;
+}
+
+/* Tailwind Scrollbar Plugin */
+@plugin 'tailwind-scrollbar';
+
+/* Mapbox Canvas Fix */
+.mapboxgl-canvas {
+  width: 100% !important;
+  height: 100% !important;
+  /* overflow: hidden !important; */ /* May hide popups, be careful */
+   outline: none; /* Remove focus outline */
+}
+
+/* Masquer tous les contrôles Mapbox lors de l'export PDF */
+body.is-exporting .mapboxgl-ctrl,
+body.is-exporting .mapboxgl-ctrl-top-right,
+body.is-exporting .mapboxgl-ctrl-bottom-right {
+  display: none !important;
+}
+
+/* Hide Mapbox Logo/Attribution via CSS (More reliable) */
+.mapboxgl-ctrl-bottom-left,
+.mapboxgl-ctrl-bottom-right {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Tiptap Editor Styles */
+.tiptap {
+  /* Base styles for editor content */
+}
+.tiptap p {
+  margin: 0; /* Reset paragraph margin */
+}
+.tiptap:focus {
+  outline: none; /* Remove focus outline */
+}
+
+/* Optional: Class to hide elements during PDF export */
+.is-exporting .hide-on-export {
+    display: none !important;
+}
+
+/* Style for Stripe Card Element Container */
+.StripeElement {
+  background-color: transparent;
+  padding: 10px 12px;
+  border-radius: 4px;
+  border: 1px solid transparent; /* Add border for focus indication */
+  box-shadow: none;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.StripeElement--focus {
+  border-color: #3b82f6; /* Blue border on focus */
+}
+
+.StripeElement--invalid {
+  border-color: #fa755a; /* Red border for errors */
+}
+
+.StripeElement--webkit-autofill {
+  background-color: #fefde5 !important; /* Handle autofill background */
+}
+
+/* Disable animations during PDF export for Recharts */
+.is-exporting .recharts-wrapper * {
+  transition-property: none !important;
+  transition-duration: 0s !important;
+  animation: none !important;
+  animation-duration: 0s !important;
+}
+
+.is-exporting .recharts-area-area,
+.is-exporting .recharts-line-line,
+.is-exporting .recharts-bar-rectangle,
+.is-exporting .recharts-sector {
+   animation: none !important;
+   transition: none !important;
+}
+
+/* Modern Number Input Styles */
+.modern-number-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+.modern-number-input-field {
+  width: 100%;
+  padding-right: 38px;
+  border-radius: 6px;
+  border: 1px solid #222c3a;
+  font-size: 1rem;
+  background: #181d23;
+  color: #fff;
+  height: 40px;
+  outline: none;
+  transition: border 0.2s;
+}
+.modern-number-input-field:focus {
+  border-color: #3b82f6;
+}
+.custom-spin-buttons {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  gap: 2px;
+  z-index: 2;
+}
+.custom-spin-buttons button {
+  background: #222c3a;
+  border: none;
+  border-radius: 4px;
+  width: 22px;
+  height: 22px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  padding: 0;
+}
+.custom-spin-buttons button:hover:enabled {
+  background: #3b82f6;
+}
+.custom-spin-buttons button:active:enabled {
+  background: #1d4ed8;
+}
+.custom-spin-buttons button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+/* Hide native arrows */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+.modern-number-label {
+  margin-right: 8px;
+  color: #b8b8b8;
+  font-size: 0.95em;
+}
+
+/* Effet hover professionnel pour les templates */
+.template-hover {
+  transition: transform 0.22s cubic-bezier(.4,1.5,.5,1), box-shadow 0.22s cubic-bezier(.4,1.5,.5,1);
+  box-shadow: 0 2px 12px 0 rgba(0,0,0,0.07);
+  border-radius: 14px;
+}
+.template-hover:hover, .template-hover:focus-visible {
+  transform: scale(1.045) translateY(-2px);
+  box-shadow: 0 8px 32px 0 rgba(0,0,0,0.16), 0 1.5px 8px 0 rgba(0,0,0,0.09);
+  z-index: 2;
+}

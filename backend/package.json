@@ -1,0 +1,30 @@
+{
+    "name": "runmemories-backend",
+    "version": "1.0.0",
+    "description": "Backend for RunMemories Stripe integration and API",
+    "main": "server.js",
+    "type": "module",
+    "scripts": {
+        "start": "node server.js",
+        "dev": "nodemon server.js"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@napi-rs/canvas": "^0.1.40",
+        "@sendgrid/mail": "^8.1.5",
+        "cors": "^2.8.5",
+        "dotenv": "^16.4.5",
+        "express": "^4.19.2",
+        "multer": "^1.4.5-lts.2",
+        "pdf-lib": "^1.17.1",
+        "pdf-poppler": "^0.2.1",
+        "sharp": "^0.34.1",
+        "stripe": "^15.10.0"
+    },
+    "devDependencies": {
+        "@types/multer": "^1.4.12",
+        "nodemon": "^3.1.3"
+    }
+}
