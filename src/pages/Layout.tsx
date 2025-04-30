@@ -16,13 +16,33 @@ import clsx from 'clsx';
 import { useState, useEffect, useCallback } from 'react';
 import debounce from 'lodash.debounce';
 import throttle from 'lodash.throttle';
+import { useTranslation } from 'react-i18next';
+import { addPosterToCart } from '../store/cartSlice';
+import CartLoaderOverlay from '../components/CartLoaderOverlay';
+import { useNavigate } from 'react-router-dom';
 
-const Layout = () => {
+interface LayoutProps {
+  mapEditorRef: any;
+}
+
+const Layout: React.FC<LayoutProps> = ({ mapEditorRef }) => {
   const dispatch = useDispatch();
   const store = useStore<RootState>();
   const { orientation, selectedLayoutId, margins, backgroundColor, border } = useSelector(
     (state: RootState) => state.layout
   );
+  const { t } = useTranslation();
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const navigate = useNavigate();
+  const labels = useSelector((state: RootState) => state.labels);
+  const points = useSelector((state: RootState) => state.points.points);
+  const layout = useSelector((state: RootState) => state.layout);
+  const map = useSelector((state: RootState) => state.map);
+  const trace = useSelector((state: RootState) => state.trace);
+  const profile = useSelector((state: RootState) => state.profile);
+  const product = useSelector((state: RootState) => state.product);
+  const activities = useSelector((state: RootState) => state.activities.activities);
+  const activeActivityIds = useSelector((state: RootState) => state.activities.activeActivityIds);
 
   const [localBgColor, setLocalBgColor] = useState(backgroundColor);
   const [localBorderColor, setLocalBorderColor] = useState(border.color);
@@ -116,19 +136,56 @@ const Layout = () => {
     throttleSetLocalBorderColor,
   ]);
 
+  const handleAddToCart = async () => {
+    if (!mapEditorRef?.current || !mapEditorRef.current.generatePreviewImage) {
+      alert("Erreur : Impossible d'accéder à l'éditeur ou à la carte pour générer l'aperçu.");
+      return;
+    }
+    setIsAddingToCart(true);
+    try {
+      const thumbnailUrl = await mapEditorRef.current.generatePreviewImage();
+      const { currentPrice: _, ...productDetails } = product;
+      const productForCart = {
+        ...productDetails,
+        price: product.currentPrice,
+      };
+      const posterConfiguration = {
+        labels,
+        points,
+        layout,
+        map,
+        trace,
+        profile,
+        product: productForCart,
+        activeActivityIds,
+        activitiesData: activities,
+      };
+      dispatch(addPosterToCart({
+        id: `cart-${Date.now()}-${Math.random().toString(16).substring(2, 8)}`,
+        configuration: posterConfiguration,
+        thumbnailUrl: thumbnailUrl ?? undefined,
+      }));
+      navigate('/cart');
+    } catch (error) {
+      alert("Erreur lors de l'ajout au panier");
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
+
   return (
     <div className="space-y-6 p-1 text-white">
       {/* Header */}
       <div className="space-y-1 mb-6">
-        <h1 className="text-2xl font-semibold font-sans">Disposition</h1>
+        <h1 className="text-2xl font-semibold font-sans">{t('layout.title')}</h1>
         <p className="text-gray-400 font-light text-sm">
-          Choisissez la disposition de votre affiche.
+          {t('layout.subtitle')}
         </p>
       </div>
 
       {/* Orientation */}
       <Field>
-        <Label className="text-sm font-medium">Orientation</Label>
+        <Label className="text-sm font-medium">{t('layout.orientation')}</Label>
         <RadioGroup
           value={orientation}
           onChange={(value: Orientation) => dispatch(setOrientation(value))}
@@ -147,7 +204,7 @@ const Layout = () => {
                   )
                 }
               >
-                {option}
+                {option === 'Portrait' ? t('layout.portrait') : t('layout.landscape')}
               </Radio>
             ))}
           </div>
@@ -156,7 +213,7 @@ const Layout = () => {
 
       {/* Layout Templates */}
       <Field>
-        <Label className="text-sm font-medium">Style de disposition</Label>
+        <Label className="text-sm font-medium">{t('layout.style')}</Label>
         <RadioGroup
           value={selectedLayoutId}
           onChange={(id: string) => dispatch(setLayout(id))}
@@ -189,18 +246,18 @@ const Layout = () => {
 
       {/* Marges */}
       <Field>
-        <Label className="text-sm font-medium">Marges (pixels)</Label>
+        <Label className="text-sm font-medium">{t('layout.margins')}</Label>
         <div className="grid grid-cols-4 gap-2 mt-3">
-          {["top", "right", "bottom", "left"].map((side) => (
+          {(['top', 'right', 'bottom', 'left'] as (keyof typeof margins)[]).map((side) => (
             <div key={side}>
               <Label className="text-xs capitalize text-gray-400">
                 {side === "top"
-                  ? "Haut"
+                  ? t('layout.top')
                   : side === "right"
-                  ? "Droite"
+                  ? t('layout.right')
                   : side === "bottom"
-                  ? "Bas"
-                  : "Gauche"}
+                  ? t('layout.bottom')
+                  : t('layout.left')}
               </Label>
               <Input
                 type="number"
@@ -219,7 +276,7 @@ const Layout = () => {
 
       {/* Couleur de fond */}
       <Field>
-        <Label className="text-sm font-medium">Couleur de fond</Label>
+        <Label className="text-sm font-medium">{t('layout.background_color')}</Label>
         <div className="flex items-center gap-2 mt-3">
           <Input
             type="color"
@@ -241,10 +298,10 @@ const Layout = () => {
 
       {/* Bordures */}
       <Field>
-        <Label className="text-sm font-medium">Bordure</Label>
+        <Label className="text-sm font-medium">{t('layout.border')}</Label>
         <div className="grid grid-cols-2 gap-4 mt-3">
           <div>
-            <Label className="text-xs text-gray-400">Épaisseur (px)</Label>
+            <Label className="text-xs text-gray-400">{t('layout.thickness')}</Label>
             <Input
               type="number"
               min="0"
@@ -257,7 +314,7 @@ const Layout = () => {
             />
           </div>
           <div>
-            <Label className="text-xs text-gray-400">Couleur</Label>
+            <Label className="text-xs text-gray-400">{t('layout.color')}</Label>
             <div className="flex items-center gap-2 mt-1">
               <Input
                 type="color"
@@ -279,8 +336,40 @@ const Layout = () => {
         </div>
       </Field>
 
-      {/* Bouton Suivant (Optionnel ici, dépend du flux) */}
-      {/* <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md mt-4">Suivant</button> */}
+      {/* Bouton Ajouter au panier en bas, style identique à Overview */}
+      {isAddingToCart && <CartLoaderOverlay message={t('overview.adding_to_cart')} />}
+      <button
+        onClick={handleAddToCart}
+        disabled={isAddingToCart}
+        className="w-full text-sm cursor-pointer flex justify-center items-center space-x-2 bg-orange-500 hover:opacity-75 text-white py-2 rounded-sm disabled:opacity-50 disabled:cursor-wait mt-8"
+      >
+        {isAddingToCart ? (
+          <>
+            <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>{t('overview.adding_to_cart')}</span>
+          </>
+        ) : (
+          <>
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 1 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+              />
+            </svg>
+            <span>{t('overview.add_to_cart')}</span>
+          </>
+        )}
+      </button>
     </div>
   );
 };

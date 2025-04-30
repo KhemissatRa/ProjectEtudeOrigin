@@ -77,6 +77,14 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
+// Translation Import
+import { useTranslation } from 'react-i18next';
+
+// Router imports
+import { useNavigate } from 'react-router-dom';
+import { addPosterToCart } from '../store/cartSlice';
+import CartLoaderOverlay from '../components/CartLoaderOverlay';
+
 // --- Available Fonts ---
 const AVAILABLE_FONTS = [
   { label: "ABYS", value: "'ABYS', sans-serif" },
@@ -212,12 +220,12 @@ const AVAILABLE_FONTS = [
 
 // --- Available Font Weights ---
 const AVAILABLE_FONT_WEIGHTS = [
-  { name: "Léger", value: 300 },
-  { name: "Normal", value: 400 },
-  { name: "Moyen", value: 500 },
-  { name: "Gras", value: 600 },
-  { name: "Très gras", value: 700 },
-  { name: "Extrêmement gras", value: 800 },
+  { name: "light", value: 300 },
+  { name: "normal", value: 400 },
+  { name: "medium", value: 500 },
+  { name: "bold", value: 600 },
+  { name: "extrabold", value: 700 },
+  { name: "black", value: 800 },
 ];
 
 // --- Stat Default Color Fallback ---
@@ -305,6 +313,8 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
   const debounceColorTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null
   );
+  // Ajout pour la traduction
+  const { t } = useTranslation();
 
   const dispatchStyleUpdate = useCallback(
     (updates: Partial<SimpleEditorStyle>) =>
@@ -459,8 +469,7 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
       style.textTransform === buttonTransform && activeIconButtonClasses
     );
   const currentWeightName =
-    AVAILABLE_FONT_WEIGHTS.find((fw) => fw.value === style.fontWeight)?.name ||
-    "Normal";
+    t(`labels.weight_${AVAILABLE_FONT_WEIGHTS.find((fw) => fw.value === style.fontWeight)?.name || 'normal'}`);
   const currentFontLabel =
     AVAILABLE_FONTS.find((f) => f.value === style.fontFamily)?.label || "Police";
 
@@ -614,7 +623,7 @@ const SimpleEditor: React.FC<SimpleEditorProps> = ({
                     value={fw.value}
                   >
                     <>
-                      <span className="block truncate"> {fw.name}</span>{" "}
+                      <span className="block truncate"> {t(`labels.weight_${fw.name}`)}</span>{" "}
                     </>
                   </ListboxOption>
                 ))}{" "}
@@ -1075,13 +1084,19 @@ const StatRowContent = React.memo<StatRowContentProps>(
 );
 
 // --- Composant principal des étiquettes ---
-const Labels = () => {
+interface LabelsProps {
+  mapEditorRef: React.RefObject<any>;
+}
+
+const Labels: React.FC<LabelsProps> = ({ mapEditorRef }) => {
   const dispatch = useDispatch();
   // --- NOUVEAU: Accéder au store pour getState dans le debounce ---
   const store = useStore<RootState>();
   const { title, description, stats } = useSelector(
     (state: RootState) => state.labels
   );
+  // Ajout pour la traduction
+  const { t } = useTranslation();
 
   // State: Local copy of stats for editing
   const [localStats, setLocalStats] = useState(() =>
@@ -1292,21 +1307,68 @@ const Labels = () => {
   };
 
   // --- Hook pour ajuster la carte lors d'un changement de taille de texte ---
-  useEffect(() => {
-    // Cette logique suppose que EditorPreview (ou la carte) expose adjustMapAsync via une ref ou callback globale
-    // À adapter selon l'implémentation réelle
-    if (window && typeof window.adjustMapAsync === 'function') {
-      window.adjustMapAsync();
+  // (Suppression de window.adjustMapAsync qui n'existe pas)
+  // useEffect(() => {
+  //   if (window && typeof window.adjustMapAsync === 'function') {
+  //     window.adjustMapAsync();
+  //   }
+  // }, [title.style.fontSize, description.style.fontSize, stats.map(s => s.style?.fontSize).join(",")]);
+
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const navigate = useNavigate();
+  const labels = useSelector((state: RootState) => state.labels);
+  const points = useSelector((state: RootState) => state.points.points);
+  const layout = useSelector((state: RootState) => state.layout);
+  const map = useSelector((state: RootState) => state.map);
+  const trace = useSelector((state: RootState) => state.trace);
+  const profile = useSelector((state: RootState) => state.profile);
+  const product = useSelector((state: RootState) => state.product);
+  const activities = useSelector((state: RootState) => state.activities.activities);
+  const activeActivityIds = useSelector((state: RootState) => state.activities.activeActivityIds);
+
+  const handleAddToCart = async () => {
+    if (!mapEditorRef?.current || !mapEditorRef.current.generatePreviewImage) {
+      alert("Erreur : Impossible d'accéder à l'éditeur ou à la carte pour générer l'aperçu.");
+      return;
     }
-  }, [title.style.fontSize, description.style.fontSize, stats.map(s => s.style?.fontSize).join(",")]);
+    setIsAddingToCart(true);
+    try {
+      const thumbnailUrl = await mapEditorRef.current.generatePreviewImage();
+      const { currentPrice: _, ...productDetails } = product;
+      const productForCart = {
+        ...productDetails,
+        price: product.currentPrice,
+      };
+      const posterConfiguration = {
+        labels,
+        points,
+        layout,
+        map,
+        trace,
+        profile,
+        product: productForCart,
+        activeActivityIds,
+        activitiesData: activities,
+      };
+      dispatch(addPosterToCart({
+        id: `cart-${Date.now()}-${Math.random().toString(16).substring(2, 8)}`,
+        configuration: posterConfiguration,
+        thumbnailUrl: thumbnailUrl ?? undefined,
+      }));
+      navigate('/cart');
+    } catch (error) {
+      alert("Erreur lors de l'ajout au panier");
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
 
   return (
     <div className="space-y-6 p-4 md:p-6 max-w-xl mx-auto md:max-w-none">
       <div className="space-y-1">
-        <h1 className="text-xl font-semibold font-sans text-white">Libellés</h1>
+        <h1 className="text-xl font-semibold font-sans text-white">{t('labels.title')}</h1>
         <p className="text-neutral-400 font-light text-sm">
-          {" "}
-          Personnalisez le titre, la description et les statistiques.{" "}
+          {t('labels.subtitle')}
         </p>
       </div>
 
@@ -1314,7 +1376,7 @@ const Labels = () => {
         <HeadlessLabel
           className={"font-sans text-base font-medium text-white pb-3"}
         >
-          Titre
+          {t('labels.label_title')}
         </HeadlessLabel>
         <SimpleEditor
           identifier="title"
@@ -1328,7 +1390,7 @@ const Labels = () => {
         <HeadlessLabel
           className={"font-sans text-base font-medium text-white pb-3"}
         >
-          Description
+          {t('labels.label_description')}
         </HeadlessLabel>
         <SimpleEditor
           identifier="description"
@@ -1340,7 +1402,7 @@ const Labels = () => {
 
       <Field as="div" className={sectionContainerClasses}>
         <HeadlessLabel className={"font-sans text-base font-medium text-white"}>
-          Statistiques
+          {t('labels.stats')}
         </HeadlessLabel>
         <DndContext
           sensors={sensors}
@@ -1378,10 +1440,45 @@ const Labels = () => {
             className="w-full flex items-center justify-center gap-2 px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <FaPlus className="w-4 h-4" />
-            Ajouter une statistique
+            {t('labels.add_stat')}
           </button>
         </div>
       </Field>
+
+      {/* Bouton Ajouter au panier en bas, style identique à Overview */}
+      {isAddingToCart && <CartLoaderOverlay message={t('overview.adding_to_cart')} />}
+      <button
+        onClick={handleAddToCart}
+        disabled={isAddingToCart}
+        className="w-full text-sm cursor-pointer flex justify-center items-center space-x-2 bg-orange-500 hover:opacity-75 text-white py-2 rounded-sm disabled:opacity-50 disabled:cursor-wait mt-8"
+      >
+        {isAddingToCart ? (
+          <>
+            <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>{t('overview.adding_to_cart')}</span>
+          </>
+        ) : (
+          <>
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 1 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+              />
+            </svg>
+            <span>{t('overview.add_to_cart')}</span>
+          </>
+        )}
+      </button>
     </div>
   );
 };

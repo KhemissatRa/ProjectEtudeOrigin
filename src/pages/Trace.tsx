@@ -14,6 +14,10 @@ import {
 import { Field, Input, Label, Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react';
 import { CheckIcon, ChevronDownIcon } from '@heroicons/react/20/solid';
 import clsx from 'clsx';
+import { useTranslation } from 'react-i18next';
+import { addPosterToCart } from '../store/cartSlice';
+import CartLoaderOverlay from '../components/CartLoaderOverlay';
+import { useNavigate } from 'react-router-dom';
 
 // Options pour les listes déroulantes (Types)
 type LineStyleOption = TraceState['lineStyle'];
@@ -56,9 +60,25 @@ const LineJoinPreview: React.FC<{ join: LineJoinOption }> = ({ join }) => (
 );
 // --- Fin SVGs ---
 
-const Trace = () => {
+interface TraceProps {
+  mapEditorRef: any;
+}
+
+const Trace: React.FC<TraceProps> = ({ mapEditorRef }) => {
   const dispatch = useDispatch();
+  const { t } = useTranslation();
   const { color, width, opacity, lineStyle, lineCap, lineJoin } = useSelector((state: RootState) => state.trace);
+  const [isAddingToCart, setIsAddingToCart] = React.useState(false);
+  const navigate = useNavigate();
+  const labels = useSelector((state: RootState) => state.labels);
+  const points = useSelector((state: RootState) => state.points.points);
+  const layout = useSelector((state: RootState) => state.layout);
+  const map = useSelector((state: RootState) => state.map);
+  const profile = useSelector((state: RootState) => state.profile);
+  const product = useSelector((state: RootState) => state.product);
+  const activities = useSelector((state: RootState) => state.activities.activities);
+  const activeActivityIds = useSelector((state: RootState) => state.activities.activeActivityIds);
+  const trace = useSelector((state: RootState) => state.trace);
 
   // 1. Fonction mémoisée pour dispatcher la couleur
   const dispatchSetColor = useCallback((newColor: string) => {
@@ -98,20 +118,56 @@ const Trace = () => {
      }
   };
 
+  const handleAddToCart = async () => {
+    if (!mapEditorRef?.current || !mapEditorRef.current.generatePreviewImage) {
+      alert("Erreur : Impossible d'accéder à l'éditeur ou à la carte pour générer l'aperçu.");
+      return;
+    }
+    setIsAddingToCart(true);
+    try {
+      const thumbnailUrl = await mapEditorRef.current.generatePreviewImage();
+      const { currentPrice: _, ...productDetails } = product;
+      const productForCart = {
+        ...productDetails,
+        price: product.currentPrice,
+      };
+      const posterConfiguration = {
+        labels,
+        points,
+        layout,
+        map,
+        trace,
+        profile,
+        product: productForCart,
+        activeActivityIds,
+        activitiesData: activities,
+      };
+      dispatch(addPosterToCart({
+        id: `cart-${Date.now()}-${Math.random().toString(16).substring(2, 8)}`,
+        configuration: posterConfiguration,
+        thumbnailUrl: thumbnailUrl ?? undefined,
+      }));
+      navigate('/cart');
+    } catch (error) {
+      alert("Erreur lors de l'ajout au panier");
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
 
   return (
     <div className="space-y-6 p-1 text-white">
       {/* Header */}
       <div className="space-y-1">
-        <h1 className="text-lg font-semibold font-sans">Style du trace</h1>
+        <h1 className="text-lg font-semibold font-sans">{t('trace.title')}</h1>
         <p className="text-gray-400 font-light text-sm">
-          Personnalisez l'apparence du trace d'activité sur la carte.
+          {t('trace.subtitle')}
         </p>
       </div>
 
       {/* Color */}
       <Field>
-        <Label className="text-sm font-medium">Couleur</Label>
+        <Label className="text-sm font-medium">{t('trace.color')}</Label>
          <div className="flex items-center gap-2 mt-1">
             <Input
                 type="color"
@@ -133,7 +189,7 @@ const Trace = () => {
 
       {/* Width */}
       <Field>
-        <Label className="text-sm font-medium">Épaisseur (pixels)</Label>
+        <Label className="text-sm font-medium">{t('trace.width')}</Label>
         <Input
           type="number"
           min="0.5"
@@ -160,7 +216,7 @@ const Trace = () => {
 
       {/* Opacity */}
        <Field>
-        <Label className="text-sm font-medium">Opacité (%)</Label>
+        <Label className="text-sm font-medium">{t('trace.opacity')}</Label>
         <Input
           type="number"
           min="0"
@@ -187,7 +243,7 @@ const Trace = () => {
 
       {/* Nouveau: Style de Ligne (Listbox) */}
       <Field>
-        <Label className="text-sm font-medium">Style de ligne</Label>
+        <Label className="text-sm font-medium">{t('trace.line_style')}</Label>
         <Listbox value={lineStyle} onChange={(val) => dispatch(setTraceLineStyle(val))}>
           <ListboxButton
             className={clsx(
@@ -197,7 +253,7 @@ const Trace = () => {
           >
             <span className="flex items-center">
               <LineStylePreview style={lineStyle} />
-              {lineStyle}
+              {t(`trace.line_style_${lineStyle}`)}
             </span>
             <ChevronDownIcon
               className="group pointer-events-none absolute top-2.5 right-2.5 size-4 fill-white/60"
@@ -220,7 +276,7 @@ const Trace = () => {
               >
                 <CheckIcon className="invisible size-4 fill-white group-data-[selected]:visible flex-shrink-0" />
                 <LineStylePreview style={option} />
-                <div className="text-sm/6">{option}</div>
+                <div className="text-sm/6">{t(`trace.line_style_${option}`)}</div>
               </ListboxOption>
             ))}
           </ListboxOptions>
@@ -229,7 +285,7 @@ const Trace = () => {
 
       {/* Nouveau: Line Cap (Listbox) */}
       <Field>
-        <Label className="text-sm font-medium">Extrémité de ligne</Label>
+        <Label className="text-sm font-medium">{t('trace.line_cap')}</Label>
         <Listbox value={lineCap} onChange={(val) => dispatch(setTraceLineCap(val))}>
           <ListboxButton
             className={clsx(
@@ -239,7 +295,7 @@ const Trace = () => {
           >
             <span className="flex items-center">
               <LineCapPreview cap={lineCap} />
-              {lineCap}
+              {t(`trace.line_cap_${lineCap}`)}
             </span>
             <ChevronDownIcon
               className="group pointer-events-none absolute top-2.5 right-2.5 size-4 fill-white/60"
@@ -262,7 +318,7 @@ const Trace = () => {
               >
                 <CheckIcon className="invisible size-4 fill-white group-data-[selected]:visible flex-shrink-0" />
                 <LineCapPreview cap={option} />
-                <div className="text-sm/6">{option}</div>
+                <div className="text-sm/6">{t(`trace.line_cap_${option}`)}</div>
               </ListboxOption>
             ))}
           </ListboxOptions>
@@ -271,7 +327,7 @@ const Trace = () => {
 
       {/* Nouveau: Line Join (Listbox) */}
       <Field>
-        <Label className="text-sm font-medium">Jonction de ligne</Label>
+        <Label className="text-sm font-medium">{t('trace.line_join')}</Label>
         <Listbox value={lineJoin} onChange={(val) => dispatch(setTraceLineJoin(val))}>
           <ListboxButton
             className={clsx(
@@ -281,7 +337,7 @@ const Trace = () => {
           >
             <span className="flex items-center">
               <LineJoinPreview join={lineJoin} />
-              {lineJoin}
+              {t(`trace.line_join_${lineJoin}`)}
             </span>
             <ChevronDownIcon
               className="group pointer-events-none absolute top-2.5 right-2.5 size-4 fill-white/60"
@@ -304,12 +360,47 @@ const Trace = () => {
               >
                 <CheckIcon className="invisible size-4 fill-white group-data-[selected]:visible flex-shrink-0" />
                 <LineJoinPreview join={option} />
-                <div className="text-sm/6">{option}</div>
+                <div className="text-sm/6">{t(`trace.line_join_${option}`)}</div>
               </ListboxOption>
             ))}
           </ListboxOptions>
         </Listbox>
       </Field>
+
+      {/* Bouton Ajouter au panier en bas, style identique à Overview */}
+      {isAddingToCart && <CartLoaderOverlay message={t('overview.adding_to_cart')} />}
+      <button
+        onClick={handleAddToCart}
+        disabled={isAddingToCart}
+        className="w-full text-sm cursor-pointer flex justify-center items-center space-x-2 bg-orange-500 hover:opacity-75 text-white py-2 rounded-sm disabled:opacity-50 disabled:cursor-wait mt-8"
+      >
+        {isAddingToCart ? (
+          <>
+            <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>{t('overview.adding_to_cart')}</span>
+          </>
+        ) : (
+          <>
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 1 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+              />
+            </svg>
+            <span>{t('overview.add_to_cart')}</span>
+          </>
+        )}
+      </button>
 
     </div>
   );

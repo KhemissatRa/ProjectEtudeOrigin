@@ -6,6 +6,7 @@ import { RootState, AppDispatch } from '../store';
 import { resetCheckoutState } from '../store/checkoutSlice';
 import { removeItemsById, clearCart, CartItem } from '../store/cartSlice';
 import { FaEnvelope, FaDownload } from 'react-icons/fa';
+import { useTranslation } from 'react-i18next';
 
 // Interface pour typer la session Stripe récupérée (partielle)
 interface StripeSessionLineItem {
@@ -61,6 +62,7 @@ const Success = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch: AppDispatch = useDispatch();
+  const { t } = useTranslation();
   // Supprimé: cartItemsFromRedux (plus besoin ici)
   const [isLoading, setIsLoading] = useState(true);
   const [paymentStatus, setPaymentStatus] = useState<'loading' | 'paid' | 'unpaid' | 'error'>('loading');
@@ -182,7 +184,7 @@ const Success = () => {
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] text-center p-6 text-white">
         <div className="max-w-xl w-full bg-[#2a2a2a] p-8 rounded-lg shadow-xl">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
-          <p className="text-sm text-gray-300 mt-4">Traitement du paiement...</p>
+          <p className="text-sm text-gray-300 mt-4">{t('success.processing')}</p>
         </div>
       </div>
     );
@@ -193,9 +195,9 @@ const Success = () => {
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] text-center p-6 text-white">
         <div className="max-w-xl w-full bg-[#2a2a2a] p-8 rounded-lg shadow-xl">
           <HiExclamationCircle className="w-20 h-20 text-red-500 mx-auto mb-5" />
-          <h1 className="text-xl font-semibold font-sans text-white mb-3">Erreur de Vérification</h1>
+          <h1 className="text-xl font-semibold font-sans text-white mb-3">{t('success.error_title')}</h1>
           <p className="text-sm text-gray-200 font-light mb-6">
-            {errorMessage || "Impossible de vérifier l'état de votre commande. Veuillez contacter le support si le problème persiste."}
+            {errorMessage || t('success.error_message')}
           </p>
         </div>
       </div>
@@ -207,16 +209,15 @@ const Success = () => {
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] text-center p-6 text-white">
         <div className="max-w-xl w-full bg-[#2a2a2a] p-8 rounded-lg shadow-xl">
           <HiExclamationCircle className="w-20 h-20 text-yellow-500 mx-auto mb-5" /> 
-          <h1 className="text-xl font-semibold font-sans text-white mb-3">Paiement non Complété</h1>
+          <h1 className="text-xl font-semibold font-sans text-white mb-3">{t('success.unpaid_title')}</h1>
           <p className="text-sm text-gray-200 font-light mb-6">
-             {errorMessage || "Votre paiement n'a pas été complété ou est en attente de confirmation."}
-             Veuillez vérifier l'état auprès de votre banque ou réessayer.
+             {errorMessage || t('success.unpaid_message')}
           </p>
            <button
               onClick={() => navigate('/checkout')}
               className="mt-4 px-6 py-2.5 bg-[#333333] hover:bg-[#444444] text-white text-sm font-medium rounded-sm transition-colors duration-150 uppercase tracking-wider cursor-pointer"
             >
-              Retourner au Paiement
+              {t('success.back_to_payment')}
             </button>
         </div>
       </div>
@@ -228,13 +229,13 @@ const Success = () => {
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] text-center p-6 text-white">
       <div className="max-w-xl w-full bg-[#2a2a2a] p-8 rounded-lg shadow-xl">
         <HiCheckCircle className="w-20 h-20 text-green-500 mx-auto mb-5" />
-        <h1 className="text-xl font-semibold font-sans text-white mb-3">Paiement Confirmé !</h1>
+        <h1 className="text-xl font-semibold font-sans text-white mb-3">{t('success.paid_title')}</h1>
         <p className="text-sm text-gray-200 font-light mb-6">
-          Vos affiches personnalisées sont prêtes à télécharger.
+          {t('success.paid_message')}
         </p>
         <div className="bg-[#333333] p-4 rounded-md mb-8 border border-gray-600/50 flex flex-col items-center space-y-3">
           <div className="w-full flex flex-row items-center justify-between gap-2 min-w-0 bg-[#26292f] border border-gray-500/30 rounded px-3 py-2">
-            <span className="text-xs text-gray-300 font-medium">Référence de commande</span>
+            <span className="text-xs text-gray-300 font-medium">{t('success.order_reference')}</span>
             <button
               onClick={() => {
                 if (sessionId) {
@@ -244,23 +245,23 @@ const Success = () => {
                 }
               }}
               className="p-1 rounded hover:bg-gray-600 transition flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-green-400"
-              title="Copier la référence"
+              title={t('success.copy_reference')}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-100" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="8" y="8" width="8" height="8" rx="2" stroke="currentColor" strokeWidth="2"/><rect x="4" y="4" width="8" height="8" rx="2" stroke="currentColor" strokeWidth="2"/></svg>
-              <span className="sr-only">Copier la référence</span>
+              <span className="sr-only">{t('success.copy_reference')}</span>
             </button>
           </div>
           {showToast && (
             <div className="absolute left-1/2 -translate-x-1/2 mt-3 bg-[#333b47] text-gray-100 text-xs px-4 py-2 rounded shadow-lg border border-gray-500/30 animate-fadein z-50">
-              Référence copiée !
+              {t('success.reference_copied')}
             </div>
           )}
         </div>
         <div className="space-y-3">
           {paidItems.map((item, index) => {
             const isDisabled = item.downloaded; 
-            const buttonText = item.downloaded ? `Télécharger l'affiche ${index + 1} (à nouveau)` : `Télécharger l'affiche ${index + 1}`;
-            const itemTitle = item.name || `Affiche ${index + 1}`;
+            const buttonText = item.downloaded ? t('success.download_again', { num: index + 1 }) : t('success.download', { num: index + 1 });
+            const itemTitle = item.name || t('success.poster', { num: index + 1 });
 
             return (
               <button

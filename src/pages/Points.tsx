@@ -26,6 +26,10 @@ import {
 } from "react-icons/fa"; // Icons from react-icons
 
 import PointEditor from "../components/PointEditor";
+import { useTranslation } from 'react-i18next';
+import { addPosterToCart } from '../store/cartSlice';
+import CartLoaderOverlay from '../components/CartLoaderOverlay';
+import { useNavigate } from 'react-router-dom';
 
 interface PointsProps {
   mapEditorRef: any;
@@ -37,16 +41,21 @@ const Points: React.FC<PointsProps> = ({ mapEditorRef }) => {
   const selectedPointId = useSelector(
     (state: RootState) => state.points.selectedPointId
   );
-  const activities = useSelector(
-    (state: RootState) => state.activities.activities
-  );
-  const activeActivityIds = useSelector(
-    (state: RootState) => state.activities.activeActivityIds
-  );
+  const activities = useSelector((state: RootState) => state.activities.activities);
+  const activeActivityIds = useSelector((state: RootState) => state.activities.activeActivityIds);
   const [selectAll, setSelectAll] = useState(false);
   const [selectedAvailablePoint, setSelectedAvailablePoint] = useState<
     string | null
   >(null);
+  const { t } = useTranslation();
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const navigate = useNavigate();
+  const labels = useSelector((state: RootState) => state.labels);
+  const layout = useSelector((state: RootState) => state.layout);
+  const map = useSelector((state: RootState) => state.map);
+  const trace = useSelector((state: RootState) => state.trace);
+  const profile = useSelector((state: RootState) => state.profile);
+  const product = useSelector((state: RootState) => state.product);
 
   useEffect(() => {
     console.log("[Points.tsx] All points from Redux state:", allPointsFromState.length, JSON.stringify(allPointsFromState, null, 2));
@@ -118,16 +127,53 @@ const Points: React.FC<PointsProps> = ({ mapEditorRef }) => {
     (point: Point) => activeActivityIds.includes(point.activityId) && point.isVisible
   );
 
+  const handleAddToCart = async () => {
+    if (!mapEditorRef?.current || !mapEditorRef.current.generatePreviewImage) {
+      alert("Erreur : Impossible d'accéder à l'éditeur ou à la carte pour générer l'aperçu.");
+      return;
+    }
+    setIsAddingToCart(true);
+    try {
+      // Générer l'aperçu de la carte
+      const thumbnailUrl = await mapEditorRef.current.generatePreviewImage();
+      const { currentPrice: _, ...productDetails } = product;
+      const productForCart = {
+        ...productDetails,
+        price: product.currentPrice,
+      };
+      const posterConfiguration = {
+        labels,
+        points: allPointsFromState,
+        layout,
+        map,
+        trace,
+        profile,
+        product: productForCart,
+        activeActivityIds,
+        activitiesData: activities,
+      };
+      dispatch(addPosterToCart({
+        id: `cart-${Date.now()}-${Math.random().toString(16).substring(2, 8)}`,
+        configuration: posterConfiguration,
+        thumbnailUrl: thumbnailUrl ?? undefined,
+      }));
+      navigate('/cart');
+    } catch (error) {
+      alert("Erreur lors de l'ajout au panier");
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
 
   return (
     <div className="space-y-8 p-4 md:p-6 max-w-md mx-auto md:max-w-none">
       {/* Header */}
       <div className="space-y-1">
         <h1 className="text-lg font-semibold font-sans text-white">
-          Points d'intérêt
+          {t('points.title')}
         </h1>
         <p className="text-gray-400 font-light text-sm">
-          Gérez les points d'intérêt affichés sur la carte.
+          {t('points.subtitle')}
         </p>
       </div>
 
@@ -139,7 +185,7 @@ const Points: React.FC<PointsProps> = ({ mapEditorRef }) => {
             onClick={handleReturnToList}
             className="inline-flex items-center text-white hover:opacity-75 cursor-pointer transition duration-150 ease-in-out"
           >
-            <FaArrowLeft className="mr-2" /> Retour à la liste
+            <FaArrowLeft className="mr-2" /> {t('points.back_to_list')}
           </button>
           <PointEditor pointId={selectedPointId} mapEditorRef={mapEditorRef} />
         </div>
@@ -149,7 +195,7 @@ const Points: React.FC<PointsProps> = ({ mapEditorRef }) => {
           {/* Top Bar (Select All, Delete, Add) */}
           <div className="flex items-center justify-between">
             <div className="text-white font-medium">
-              Points ({displayedPoints.length})
+              {t('points.points')} ({displayedPoints.length})
             </div>
 
             <div className="flex items-center space-x-2">
@@ -161,7 +207,7 @@ const Points: React.FC<PointsProps> = ({ mapEditorRef }) => {
                     .forEach((point) => handleDeletePoint(point.id))
                 }
                 className="flex flex-col items-center justify-center p-2 rounded-md bg-[#333] h-8 w-8 hover:opacity-75 cursor-pointer text-gray-400 hover:text-white transition duration-150 ease-in-out"
-                title="Supprimer tous les points visibles"
+                title={t('points.delete_all')}
                 disabled={
                   displayedPoints.filter((point) => point.isVisible).length ===
                   0
@@ -186,7 +232,7 @@ const Points: React.FC<PointsProps> = ({ mapEditorRef }) => {
                       {selectedAvailablePoint
                         ? allPointsFromState.find((p) => p.id === selectedAvailablePoint)
                             ?.name
-                        : "Ajouter un point"}
+                        : t('points.add_point')}
                     </span>
                     <ChevronDownIcon
                       className="group pointer-events-none absolute top-2.5 right-2.5 size-4 fill-white/60"
@@ -248,13 +294,11 @@ const Points: React.FC<PointsProps> = ({ mapEditorRef }) => {
                       </p>
                     </div>
                     <p className="text-gray-400 text-xs text-left">
-                      Activité :{" "}
-                      {activities.find((act) => act.id === point.activityId)
-                        ?.name || "Activité sans nom"}
+                      {t('points.activity')}: {activities.find((act) => act.id === point.activityId)
+                        ?.name || t('points.unnamed_activity')}
                     </p>
                     <p className="text-gray-400 text-xs text-left">
-                      Coordonnées : {point.coordinate?.[0]?.toFixed(5)},{" "}
-                      {point.coordinate?.[1]?.toFixed(5)}
+                      {t('points.coordinates')}: {point.coordinate?.[0]?.toFixed(5)}, {point.coordinate?.[1]?.toFixed(5)}
                     </p>
                   </div>
 
@@ -265,8 +309,8 @@ const Points: React.FC<PointsProps> = ({ mapEditorRef }) => {
                         handleSelectPoint(point.id);
                       }}
                       className="flex-shrink-0 p-1 w-7 h-7 flex flex-col items-center justify-center cursor-pointer rounded-full text-gray-500 hover:text-blue-500 hover:bg-gray-700 transition duration-150 ease-in-out"
-                      aria-label={`Éditer ${point.name}`}
-                      title="Éditer"
+                      aria-label={t('points.edit_aria', { name: point.name })}
+                      title={t('points.edit_title')}
                     >
                       <FaEdit className="w-3 h-3" />
                     </button>
@@ -276,8 +320,8 @@ const Points: React.FC<PointsProps> = ({ mapEditorRef }) => {
                         handleDeletePoint(point.id);
                       }}
                       className="flex-shrink-0 p-1 w-7 h-7 flex flex-col items-center justify-center cursor-pointer rounded-full text-gray-500 hover:text-red-500 hover:bg-gray-700 transition duration-150 ease-in-out"
-                      aria-label={`Supprimer ${point.name}`}
-                      title="Supprimer"
+                      aria-label={t('points.delete_aria', { name: point.name })}
+                      title={t('points.delete_title')}
                     >
                       <FaTrash className="w-3 h-3" />
                     </button>
@@ -287,6 +331,41 @@ const Points: React.FC<PointsProps> = ({ mapEditorRef }) => {
           </div>
         </div>
       )}
+      {/* Bouton Ajouter au panier en bas */}
+      {isAddingToCart && <CartLoaderOverlay message={t('overview.adding_to_cart')} />}
+      <button
+        onClick={handleAddToCart}
+        disabled={isAddingToCart}
+        className="w-full text-sm cursor-pointer flex justify-center items-center space-x-2 bg-orange-500 hover:opacity-75 text-white py-2 rounded-sm disabled:opacity-50 disabled:cursor-wait mt-8"
+        style={{ position: 'sticky', bottom: 0, left: 0 }}
+      >
+        {isAddingToCart ? (
+          <>
+            <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>{t('overview.adding_to_cart')}</span>
+          </>
+        ) : (
+          <>
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 1 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+              />
+            </svg>
+            <span>{t('overview.add_to_cart')}</span>
+          </>
+        )}
+      </button>
     </div>
   );
 };

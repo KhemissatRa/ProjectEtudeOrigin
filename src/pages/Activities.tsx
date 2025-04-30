@@ -6,6 +6,7 @@ import { handleFileUpload } from "../utils/fileUpload";
 import { HiUpload, HiTrash, HiX } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
 import Spinner from "../components/Spinner";
+import { useTranslation } from 'react-i18next';
 
 import {
   addActivity,
@@ -23,8 +24,14 @@ import {
 import Activity from "../types/Activity";
 
 import { updateStat } from "../store/labelsSlice";
+import { addPosterToCart } from '../store/cartSlice';
+import CartLoaderOverlay from '../components/CartLoaderOverlay';
 
-const Activities = () => {
+interface ActivitiesProps {
+  mapEditorRef: any;
+}
+
+const Activities: React.FC<ActivitiesProps> = ({ mapEditorRef }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const activities = useSelector(
@@ -35,6 +42,7 @@ const Activities = () => {
   );
   const [isLoadingStrava, setIsLoadingStrava] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   const stravaClientId = import.meta.env.VITE_STRAVA_CLIENT_ID;
   const stravaClientSecret = import.meta.env.VITE_STRAVA_CLIENT_SECRET;
@@ -71,7 +79,7 @@ const Activities = () => {
       fetchStravaAccessToken(code);
       window.history.replaceState({}, document.title, "/activities");
     } else if (code && (!state || state !== storedState)) {
-      setError("Erreur d’authentification Strava : état invalide.");
+      setError("Erreur d'authentification Strava : état invalide.");
       localStorage.removeItem("strava_temp_state");
       window.history.replaceState({}, document.title, "/activities");
     }
@@ -116,7 +124,7 @@ const Activities = () => {
         localStorage.setItem("strava_access_token", data.access_token);
         await fetchStravaActivities(data.access_token);
       } else {
-        throw new Error("Token d’accès Strava non reçu.");
+        throw new Error("Token d'accès Strava non reçu.");
       }
     } catch (error: any) {
       console.error("Error fetchStravaAccessToken:", error);
@@ -436,16 +444,62 @@ const Activities = () => {
     }
   };
 
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const labels = useSelector((state: RootState) => state.labels);
+  const points = useSelector((state: RootState) => state.points.points);
+  const layout = useSelector((state: RootState) => state.layout);
+  const map = useSelector((state: RootState) => state.map);
+  const trace = useSelector((state: RootState) => state.trace);
+  const profile = useSelector((state: RootState) => state.profile);
+  const product = useSelector((state: RootState) => state.product);
+
+  const handleAddToCart = async () => {
+    if (!mapEditorRef?.current || !mapEditorRef.current.generatePreviewImage) {
+      alert("Erreur : Impossible d'accéder à l'éditeur ou à la carte pour générer l'aperçu.");
+      return;
+    }
+    setIsAddingToCart(true);
+    try {
+      const thumbnailUrl = await mapEditorRef.current.generatePreviewImage();
+      const { currentPrice: _, ...productDetails } = product;
+      const productForCart = {
+        ...productDetails,
+        price: product.currentPrice,
+      };
+      const posterConfiguration = {
+        labels,
+        points,
+        layout,
+        map,
+        trace,
+        profile,
+        product: productForCart,
+        activeActivityIds,
+        activitiesData: activities,
+      };
+      dispatch(addPosterToCart({
+        id: `cart-${Date.now()}-${Math.random().toString(16).substring(2, 8)}`,
+        configuration: posterConfiguration,
+        thumbnailUrl: thumbnailUrl ?? undefined,
+      }));
+      navigate('/cart');
+    } catch (error) {
+      alert("Erreur lors de l'ajout au panier");
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
+
   // --- Rendu JSX ---
   return (
     <div className="space-y-6 p-4 md:p-6 max-w-md mx-auto md:max-w-none">
       {/* Header */}
       <div className="space-y-1">
         <h1 className="text-lg font-semibold font-sans text-white">
-          Activités
+          {t('activities.title')}
         </h1>
         <p className="text-gray-400 font-light text-sm">
-          Importez vos activités ou connectez-vous à Strava.
+          {t('activities.subtitle')}
         </p>
       </div>
 
@@ -457,8 +511,7 @@ const Activities = () => {
             disabled={isLoadingStrava}
             className="w-full text-sm flex justify-center items-center space-x-2 bg-[#FC4C02] hover:bg-[#e04402] text-white py-2.5 rounded-md transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {" "}
-            <SiStrava className="w-5 h-5" /> <span>Se connecter à Strava</span>
+            <SiStrava className="w-5 h-5" /> <span>{t('activities.connect_strava')}</span>
           </button>
         ) : (
           <button
@@ -466,9 +519,7 @@ const Activities = () => {
             disabled={isLoadingStrava}
             className="w-full text-sm flex justify-center items-center space-x-2 bg-[#FC4C02] hover:bg-[#e04402] text-white py-2.5 rounded-md transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {" "}
-            <SiStrava className="w-5 h-5" />{" "}
-            <span>Actualiser les activités Strava</span>
+            <SiStrava className="w-5 h-5" /> <span>{t('activities.refresh_strava')}</span>
           </button>
         )}
         {isLoadingStrava && (
@@ -484,15 +535,14 @@ const Activities = () => {
             accept=".gpx,.kml"
             onChange={addActivitiesFromFiles}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-            aria-label="Importer des fichiers GPX ou KML"
+            aria-label={t('activities.import_aria')}
           />
           <button
             type="button"
             className="w-full text-sm flex justify-center items-center space-x-2 bg-gray-700 hover:bg-gray-600 text-white py-2.5 rounded-md transition duration-150 ease-in-out"
             onClick={() => document.getElementById("file-upload")?.click()}
           >
-            {" "}
-            <HiUpload className="w-5 h-5" /> <span>Importer GPX / KML</span>{" "}
+            <HiUpload className="w-5 h-5" /> <span>{t('activities.import')}</span>
           </button>
         </div>
         {activities.length > 0 && (
@@ -500,8 +550,7 @@ const Activities = () => {
             onClick={handleClearActivities}
             className="w-full text-sm flex justify-center items-center space-x-2 bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-md transition duration-150 ease-in-out"
           >
-            {" "}
-            <HiTrash className="w-5 h-5" /> <span>Vider les activités</span>{" "}
+            <HiTrash className="w-5 h-5" /> <span>{t('activities.clear')}</span>
           </button>
         )}
       </div>
@@ -516,16 +565,14 @@ const Activities = () => {
       {/* Messages conditionnels */}
       {activities.length === 0 && !isLoadingStrava && (
         <div className="text-gray-500 text-sm text-center py-4">
-          {" "}
-          Aucune activité chargée. Importez un fichier ou connectez-vous à
-          Strava.{" "}
+          {t('activities.none_loaded')}
         </div>
       )}
       {isLoadingStrava && activities.length === 0 && (
         <div className="flex justify-center items-center py-4">
           <span className="ml-2 text-gray-400 text-sm">
-            Chargement des activités Strava...
-          </span>{" "}
+            {t('activities.loading_strava')}
+          </span>
         </div>
       )}
 
@@ -563,7 +610,7 @@ const Activities = () => {
                       className="text-white font-medium text-sm truncate"
                       title={activity.name}
                     >
-                      {activity.name || `Activité ${activity.id.substring(0, 5)}`}
+                      {activity.name || t('activities.unnamed', { id: activity.id.substring(0, 5) })}
                     </p>
                     {activity.stravaLink && (
                       <a
@@ -571,9 +618,9 @@ const Activities = () => {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex-shrink-0 text-gray-400 hover:text-[#FFA500]"
-                        title="Voir sur Strava"
+                        title={t('activities.view_on_strava')}
                         onClick={(e) => e.stopPropagation()}
-                        aria-label="Voir sur Strava"
+                        aria-label={t('activities.view_on_strava')}
                       >
                         <SiStrava className="w-3.5 h-3.5" />
                       </a>
@@ -591,8 +638,8 @@ const Activities = () => {
                     handleDeleteActivity(activity.id);
                   }}
                   className="flex-shrink-0 p-1 rounded-full text-gray-500 hover:text-red-500 hover:bg-gray-700 transition duration-150 ease-in-out"
-                  aria-label={`Supprimer l'activité ${activity.name}`}
-                  title="Supprimer"
+                  aria-label={t('activities.delete_aria', { name: activity.name })}
+                  title={t('activities.delete_title')}
                 >
                   <HiX className="w-4 h-4" />
                 </button>
@@ -601,6 +648,42 @@ const Activities = () => {
           </div>
         </>
       )}
+
+      {/* Bouton Ajouter au panier en bas */}
+      {isAddingToCart && <CartLoaderOverlay message={t('overview.adding_to_cart')} />}
+      <button
+        onClick={handleAddToCart}
+        disabled={isAddingToCart}
+        className="w-full text-sm cursor-pointer flex justify-center items-center space-x-2 bg-orange-500 hover:opacity-75 text-white py-2 rounded-sm disabled:opacity-50 disabled:cursor-wait mt-8"
+        style={{ position: 'sticky', bottom: 0, left: 0 }}
+      >
+        {isAddingToCart ? (
+          <>
+            <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>{t('overview.adding_to_cart')}</span>
+          </>
+        ) : (
+          <>
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 1 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+              />
+            </svg>
+            <span>{t('overview.add_to_cart')}</span>
+          </>
+        )}
+      </button>
     </div>
   );
 };

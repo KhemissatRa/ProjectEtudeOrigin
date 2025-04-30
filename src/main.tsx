@@ -9,6 +9,7 @@ import 'react-tooltip/dist/react-tooltip.css'
 import { BrowserRouter } from "react-router-dom";
 import { PersistGate } from 'redux-persist/integration/react';
 import Spinner from './components/Spinner';
+import './i18n';
 
 // --- Stripe ---
 import { loadStripe } from '@stripe/stripe-js';

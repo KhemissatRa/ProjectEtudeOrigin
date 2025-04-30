@@ -15,6 +15,7 @@ import { store } from '../store';
 import { setZoomLevel } from '../store/zoomSlice';
 import { Map as MapboxMap } from 'mapbox-gl';
 import CartLoaderOverlay from '../components/CartLoaderOverlay';
+import { useTranslation } from 'react-i18next';
 
 interface SizeProps {
   editorPreviewRef: React.RefObject<EditorPreviewRef>;
@@ -44,6 +45,7 @@ const waitForMapIdle = (map: MapboxMap, timeoutMs = 5000): Promise<void> => {
 const Size: React.FC<SizeProps> = ({ editorPreviewRef }) => {
   const dispatch: AppDispatch = useDispatch();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
@@ -161,7 +163,7 @@ const Size: React.FC<SizeProps> = ({ editorPreviewRef }) => {
              });
 
             console.log(`Ajout au panier local pour ${cartItemId} (Size page)...`);
-            const currentProductConfig: CartItem['posterConfiguration']['product'] = {
+            const currentProductConfig = {
                 productType: productState.productType,
                 selectedPaperSizeId: productState.selectedPaperSizeId,
                 selectedPaperFinishId: productState.selectedPaperFinishId,
@@ -169,9 +171,16 @@ const Size: React.FC<SizeProps> = ({ editorPreviewRef }) => {
                 selectedFrameColorId: productState.selectedFrameColorId,
                 price: productState.currentPrice,
             };
-            const posterConfiguration: CartItem['posterConfiguration'] = {
-                labels, points, layout, map, trace, profile, product: currentProductConfig,
-                activeActivityIds: activities.activeActivityIds, activitiesData: activities.activities,
+            const posterConfiguration = {
+                labels,
+                points,
+                layout,
+                map,
+                trace,
+                profile,
+                product: currentProductConfig,
+                activeActivityIds: activities.activeActivityIds,
+                activitiesData: activities.activities,
             };
             dispatch(addPosterToCart({ 
                 id: cartItemId, 
@@ -197,18 +206,18 @@ const Size: React.FC<SizeProps> = ({ editorPreviewRef }) => {
   return (
     <div className="space-y-6 p-1 text-white">
       {/* Overlay loader */}
-      {isAddingToCart && <CartLoaderOverlay message={isGeneratingPreview ? "Génération de l'aperçu et PDF..." : uploadProgress !== null ? `Upload du PDF (${uploadProgress}%)...` : "Ajout au panier..."} />}
+      {isAddingToCart && <CartLoaderOverlay message={isGeneratingPreview ? t('size.generating_preview') : uploadProgress !== null ? t('size.upload_pdf', { progress: uploadProgress }) : t('size.adding_to_cart')} />}
       {/* Header */}
       <div className="space-y-1">
-        <h1 className="text-lg font-semibold font-sans">Format du document</h1>
+        <h1 className="text-lg font-semibold font-sans">{t('size.title')}</h1>
         <p className="text-gray-400 font-light text-sm">
-          Choisissez le format pour votre document PDF cartographique.
+          {t('size.subtitle')}
         </p>
       </div>
 
       {/* Paper Size */}
       <Field>
-        <Label className="text-sm font-medium">Format du document</Label>
+        <Label className="text-sm font-medium">{t('size.paper_size')}</Label>
         <RadioGroup
           value={productState.selectedPaperSizeId}
           onChange={(value: string) => dispatch(setPaperSize(value))}
@@ -240,7 +249,7 @@ const Size: React.FC<SizeProps> = ({ editorPreviewRef }) => {
       {/* Total Price Display & Add to Cart */}
       <div className="pt-4 space-y-4">
         <div className="text-right text-lg font-semibold">
-          Total : {formatPrice(productState.currentPrice)}
+          {t('size.total')} {formatPrice(productState.currentPrice)}
         </div>
         <button
           onClick={handleAddToCart}
@@ -254,13 +263,13 @@ const Size: React.FC<SizeProps> = ({ editorPreviewRef }) => {
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
               {isGeneratingPreview 
-                ? <span>Génération de l'aperçu...</span> 
+                ? <span>{t('size.generating_preview')}</span> 
                 : uploadProgress !== null 
-                  ? <span>Upload du PDF ({uploadProgress}%)...</span> 
-                  : <span>Génération du PDF...</span>}
+                  ? <span>{t('size.upload_pdf', { progress: uploadProgress })}</span> 
+                  : <span>{t('size.generating_pdf')}</span>}
             </>
           ) : (
-            <span>Ajouter au panier</span>
+            <span>{t('size.add_to_cart')}</span>
           )}
         </button>
       </div>
