@@ -8,5 +8,9 @@
     "env": {
       "TSC_COMPILE_ON_ERROR": "true"
     }
+  },  "compilerOptions": {
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
   }
+
 }
