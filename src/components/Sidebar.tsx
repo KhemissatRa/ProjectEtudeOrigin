@@ -76,7 +76,7 @@ const Sidebar = ({ isSidebarOpen, mapEditorRef }: SidebarProps) => {
   return (
     <aside
       ref={sidebarRef}
-      className={`bg-[#222] min-w-0 w-full max-w-[90vw] md:min-w-[450px] md:w-[450px] md:max-w-[450px] pl-1 md:pl-4 shadow-md flex flex-row gap-1 md:gap-4 border-r border-[#333] h-[calc(100vh-61px)] transition-all duration-300 ease-in-out ${
+      className={`bg-[#222] min-w-full max-w-full md:min-w-[450px] md:w-[450px] md:max-w-[450px] pl-1 md:pl-4 shadow-md flex flex-row gap-1 md:gap-4 border-r border-[#333] h-[calc(100vh-61px)] transition-all duration-300 ease-in-out ${
         isSidebarOpen
           ? "translate-x-0 opacity-100"
           : "-translate-x-full opacity-0"

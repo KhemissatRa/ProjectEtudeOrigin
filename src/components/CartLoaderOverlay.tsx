@@ -31,6 +31,7 @@ const CartLoaderOverlay: React.FC<CartLoaderOverlayProps> = ({ message }) => {
         background: "#1e2027", // Couleur foncée, modifiable selon ton branding
         zIndex: 99999,
         display: "flex",
+        
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",

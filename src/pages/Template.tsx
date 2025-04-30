@@ -137,7 +137,8 @@ const TemplatePage: React.FC<TemplatePageProps> = ({ mapEditorRef }) => {
   };
 
   return (
-    <div className="w-full h-full">
+    <div className="flex flex-col w-full h-full bg-gray-900 rounded-lg shadow-lg overflow-hidden">
+      {/* En-tête de la page */}
       <div className="space-y-1 px-2 pt-6 pb-4">
         <h1 className="text-lg font-semibold font-sans text-white">
           {t('template.title')}

@@ -492,7 +492,7 @@ const Activities: React.FC<ActivitiesProps> = ({ mapEditorRef }) => {
 
   // --- Rendu JSX ---
   return (
-    <div className="space-y-6 p-4 md:p-6 max-w-md mx-auto md:max-w-none">
+    <div className="space-y-6 p-4 md:p-6 max-w-full mx-auto md:max-w-none">
       {/* Header */}
       <div className="space-y-1">
         <h1 className="text-lg font-semibold font-sans text-white">

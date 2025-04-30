@@ -86,7 +86,7 @@ const Header = ({
   };
 
   return (
-    <header className="bg-[#222] w-full text-white border-b border-[#333] h-[61px] z-50 p-4 flex items-center justify-between flex-shrink-0">
+    <header className="bg-[#222] max-w-full text-white border-b border-[#333] h-[61px] z-50 p-4 flex items-center justify-between flex-shrink-0">
       {/* Logo et bouton toggle */}
       <div className="flex items-center space-x-1">
         <NavLink to={"/"} className="text-lg font-sans font-bold">
@@ -108,7 +108,7 @@ const Header = ({
           <Listbox value={selectedZoom} onChange={handleZoomChange}>
             <ListboxButton
               className={clsx(
-                "relative block w-full rounded-lg bg-[#333] py-1.5 pr-8 pl-3 text-left text-sm/6 text-white",
+                "relative block w-full rounded-lg bg-[#333] py-1.5 pr-8 pl-3 text-left text-sm/6 text-white fit-to-screen-btn",
                 "focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25",
                 "whitespace-nowrap"
               )}

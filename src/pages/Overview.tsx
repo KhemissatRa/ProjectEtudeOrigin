@@ -114,10 +114,10 @@ const Overview: React.FC<OverviewProps> = ({ editorPreviewRef }) => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 max-w-full min-h-full">
       {/* Overlay loader */}
       {isAddingToCart && <CartLoaderOverlay message={isGeneratingPreview ? t('overview.generating_preview') : uploadProgress !== null ? t('overview.upload_pdf', { progress: uploadProgress }) : t('overview.adding_to_cart')} />}
-      <div className="space-y-1">
+      <div className="space-y-1 ">
         <div className="font-sans font-bold text-white">{t('overview.title')}</div>
         <div className="mt-1 text-gray-400 font-light text-sm">
           {t('overview.subtitle')}

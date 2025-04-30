@@ -966,21 +966,24 @@ const EditorPreview = forwardRef<EditorPreviewRef, EditorPreviewProps>(
 
     return (
       <div
-        ref={containerRef}
-        className="shadow-lg overflow-hidden relative print-container"
-        style={{
-          width: scaledDimensions.width,
-          height: scaledDimensions.height,
-          background: backgroundColor,
-          border: `${layout.border.thickness}px solid ${layout.border.color}`,
-          // Appliquer les marges mises à l'échelle comme padding
-          paddingTop: `${scaledMargins.top}px`,
-          paddingRight: `${scaledMargins.right}px`,
-          paddingBottom: `${scaledMargins.bottom}px`,
-          paddingLeft: `${scaledMargins.left}px`,
-          boxSizing: "border-box",
-        }}
-      >
+      ref={containerRef}
+      className="max-w-full  mx-auto md:w-full shadow-lg overflow-hidden relative print-container"
+      style={{
+        width: scaledDimensions.width,
+        height: scaledDimensions.height,
+        background: backgroundColor,
+        border: `${layout.border.thickness}px solid ${layout.border.color}`,
+        paddingTop: `${scaledMargins.top}px`,
+        paddingRight: `${scaledMargins.right}px`,
+        paddingBottom: `${scaledMargins.bottom}px`,
+        paddingLeft: `${scaledMargins.left}px`,
+        boxSizing: "border-box",
+        aspectRatio: scaledDimensions.width / scaledDimensions.height, // optional: keeps shape ratio
+      }}
+    >
+    
+
+      
         {/* Remove the Export Overlay section if it's commented out or not needed */}
         {/* {isExporting && (
         <div
