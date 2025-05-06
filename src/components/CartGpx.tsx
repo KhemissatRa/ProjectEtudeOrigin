@@ -78,7 +78,7 @@ const MapWithGPX = () => {
         }).addTo(map);
 
         // Add GPX track
-        const gpxUrl = "/marathon-paris.gpx";
+        const gpxUrl = "/marathon-pariss.gpx";
         const gpxTrack = new window.L.GPX(gpxUrl, {
           async: true,
           marker_options: {
