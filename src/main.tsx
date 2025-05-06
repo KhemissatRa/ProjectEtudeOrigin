@@ -1,5 +1,6 @@
 // src/main.tsx
 import './index.css'
+import 'leaflet/dist/leaflet.css'
 import App from './App.tsx'
 import { store, persistor } from './store';
 import { StrictMode } from 'react'

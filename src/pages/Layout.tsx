@@ -20,7 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { addPosterToCart } from '../store/cartSlice';
 import CartLoaderOverlay from '../components/CartLoaderOverlay';
 import { useNavigate } from 'react-router-dom';
-
+import MapWithGPX from '../components/CartGpx'; // Assuming this is the correct import path
 interface LayoutProps {
   mapEditorRef: any;
 }
@@ -210,7 +210,7 @@ const Layout: React.FC<LayoutProps> = ({ mapEditorRef }) => {
           </div>
         </RadioGroup>
       </Field>
-
+      
       {/* Layout Templates */}
       <Field>
         <Label className="text-sm font-medium">{t('layout.style')}</Label>

@@ -5,6 +5,7 @@ import Sidebar from "./components/Sidebar";
 import { toggleSidebar } from "./store/sidebarSlice";
 import { useDispatch, useSelector } from "react-redux";
 import EditorPreview, { EditorPreviewRef } from "./components/EditorPreview";
+import MapWithGPX from './components/CartGpx' // Import MapWithGPX if needed
 
 const App = () => {
   const dispatch: AppDispatch = useDispatch();
@@ -51,17 +52,20 @@ const App = () => {
          <Sidebar isSidebarOpen={isSidebarOpen} mapEditorRef={editorPreviewRef} />
 
         {/* Main Editor Preview Area */}
-        <main className="flex-auto flex flex-col h-full w-full min-h-0 min-w-0 overflow-hidden"> {/* Ensure main takes remaining space */}
-          <div className="flex-auto flex flex-col h-full w-full items-center relative z-10 overflow-auto min-h-0 min-w-0 scrollbar-thin scrollbar-thumb-[#333] scrollbar-track-[#222] p-5"> {/* Added padding */}
+          <div className="flex-auto flex flex-row h-full w-full items-center relative z-10 overflow-auto min-h-0 min-w-0 scrollbar-thin scrollbar-thumb-[#333] scrollbar-track-[#222] p-5"> {/* Added padding */}
             <div className="flex-none m-auto"> {/* Center the preview */}
               <EditorPreview
                 ref={editorPreviewRef}
               />
             </div>
-          </div>
-        </main>
-      </div>
-    </div>
+           
+  </div>
+  <div className="  w-full flex justify-center align-center relative  z-0 border-2 bg-[#415eaf]  rounded-lg  m-4 "> {/* Map area */}
+          <MapWithGPX /> {/* Include the MapWithGPX component here */}    </div>
+        {/* Footer or other components can be added here if needed */}  
+       </div>
+
+  </div>
   );
 };
 
