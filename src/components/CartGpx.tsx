@@ -18,10 +18,11 @@ interface GPXEvent {
   };
 }
 
-interface GPXLayer extends L.Layer {
-  on(event: string, callback: (e: GPXEvent) => void): this;
-  addTo(map: L.Map): this;
-}
+// Define a more specific type for the GPX layer
+type GPXLayer = {
+  on(event: 'loaded', callback: (e: GPXEvent) => void): GPXLayer;
+  addTo(map: L.Map): GPXLayer;
+} & L.Layer;
 
 interface GPXConstructor {
   new (url: string, options: GPXOptions): GPXLayer;
@@ -57,41 +58,44 @@ const MapWithGPX = () => {
     };
 
     const initializeMap = async () => {
-      await loadGPXPlugin();
+      try {
+        await loadGPXPlugin();
 
-      if (!mapContainerRef.current || !window.L.GPX) return;
+        if (!mapContainerRef.current || !window.L.GPX) return;
 
-      // Clean up existing map if it exists
-      if (mapRef.current) {
-        mapRef.current.remove();
+        // Clean up existing map if it exists
+        if (mapRef.current) {
+          mapRef.current.remove();
+        }
+
+        // Initialize map
+        const map = L.map(mapContainerRef.current).setView([48.8566, 2.3522], 13);
+        mapRef.current = map;
+
+        // Add tile layer
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution: "© OpenStreetMap",
+        }).addTo(map);
+
+        // Add GPX track
+        const gpxUrl = "/marathon-paris.gpx";
+        const gpxTrack = new window.L.GPX(gpxUrl, {
+          async: true,
+          marker_options: {
+            startIconUrl: "https://leafletjs.com/examples/custom-icons/leaf-green.png",
+            endIconUrl: "https://leafletjs.com/examples/custom-icons/leaf-red.png",
+            shadowUrl: "https://leafletjs.com/examples/custom-icons/leaf-shadow.png",
+          },
+        });
+
+        gpxTrack.on("loaded", (e: GPXEvent) => {
+          map.fitBounds(e.target.getBounds());
+        });
+
+        gpxTrack.addTo(map);
+      } catch (error) {
+        console.error("Error initializing map:", error);
       }
-
-      // Initialize map
-      const map = L.map(mapContainerRef.current).setView([48.8566, 2.3522], 13);
-      mapRef.current = map;
-
-      // Add tile layer
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "© OpenStreetMap",
-      }).addTo(map);
-
-      // Add GPX track
-      const gpxUrl = "/marathon-pariss.gpx";
- // Adjust the path to your GPX file
-      const gpxTrack = new window.L.GPX(gpxUrl, {
-        async: true,
-        marker_options: {
-          startIconUrl: "https://leafletjs.com/examples/custom-icons/leaf-green.png",
-          endIconUrl: "https://leafletjs.com/examples/custom-icons/leaf-red.png",
-          shadowUrl: "https://leafletjs.com/examples/custom-icons/leaf-shadow.png",
-        },
-      });
-
-      gpxTrack.on("loaded", (e: GPXEvent) => {
-        map.fitBounds(e.target.getBounds());
-      });
-
-      gpxTrack.addTo(map);
     };
 
     initializeMap();
@@ -104,7 +108,19 @@ const MapWithGPX = () => {
     };
   }, []);
 
-  return <div ref={mapContainerRef} style={{ height: "450px", width: "90%" }} />;
+  return (
+    <div 
+      ref={mapContainerRef} 
+      style={{ 
+        height: "450px", 
+        width: "90%",
+        margin: "0 auto",
+        borderRadius: "8px",
+        overflow: "hidden",
+        boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+      }} 
+    />
+  );
 };
 
 export default MapWithGPX;
